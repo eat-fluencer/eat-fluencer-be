@@ -1,6 +1,7 @@
 package com.eatfluencer.eatfluencer.user;
 
 import java.util.Map;
+import java.util.Random;
 
 import javax.swing.text.html.HTML;
 
@@ -33,15 +34,16 @@ public class KakaoLoginController {
 
     private final RestTemplate restTemplate;
 
-    // 카카오 로그인 요청 URL
+    // 카카오 로그인 요청 URL 반환 API
     @GetMapping("/login-request-url")
-    public ResponseEntity<String> getKakaoLoginLink() {
+    public ResponseEntity<String> getKakaoLoginLink(@RequestParam(name = "nonce") String nonce) {
     	
         String baseUrl = "https://kauth.kakao.com/oauth/authorize";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .queryParam("client_id", kakaoRestApiKey)
                 .queryParam("redirect_uri", kakaoRedirectUri)
-                .queryParam("response_type", "code");
+                .queryParam("response_type", "code") // "response_type"은 "code"로 고정
+                .queryParam("nonce", nonce);
 
         String redirectUrl = builder.toUriString();
 
@@ -50,9 +52,9 @@ public class KakaoLoginController {
         
     }
     
-    // 카카오 토큰 받기
+    // 카카오 토큰 요청 & 발급
     @GetMapping("/token")
-    public String kakaoLogin(@RequestParam(name = "code") String code) {
+    public ResponseEntity<String> getKakaoToken(@RequestParam(name = "code") String code) {
     	
         String tokenRequestUrl = "https://kauth.kakao.com/oauth/token";
         
@@ -65,14 +67,14 @@ public class KakaoLoginController {
         params.add("redirect_uri", kakaoRedirectUri);
         params.add("code", code);
         
-        ResponseEntity<String> response = restTemplate.postForEntity(
+        ResponseEntity<String> tokenResponse = restTemplate.postForEntity(
         		tokenRequestUrl
         		, new HttpEntity<>(params, headers)
         		, String.class);
         
-        JSONObject responseBody = new JSONObject(response.getBody());
+        JSONObject tokenResponseBody = new JSONObject(tokenResponse.getBody());
         
-        // 로그인 처리
+        // 가입 및 로그인 처리
         
         
         return null;

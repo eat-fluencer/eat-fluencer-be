@@ -34,6 +34,8 @@ public class User extends Time {
     
     private String nickname;
     
+    private String kakaoSubject;
+    
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
     
