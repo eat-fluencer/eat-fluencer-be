@@ -51,8 +51,11 @@ public class KakaoUserService {
 	// 카카오 공개 키 kid로 검색 후 RSAPublicKey로 만들어 반환
 	private RSAPublicKey getPublicKeyByKid(String idToken) throws Exception {
 		
-		// kid 구하기
-		String kid = jwtParser.parseHeader(idToken).getKeyId();
+		// idToken header 디코드해서 String으로 변환
+		String header = new String(Base64.getDecoder().decode(idToken.split("\\.")[0]));
+		
+		// Header에서 kid 구하기
+		String kid = jwtParser.parseHeader(header).getKeyId();
 		
 		// 공개키 목록 조회
 		String publicKeyListUrl = "https://kauth.kakao.com/.well-known/jwks.json";
@@ -92,9 +95,15 @@ public class KakaoUserService {
 	
 	// 가입 여부 확인
 	public void checkUserSignedUp(String idToken) throws NoUserException {
-		String subject = new JSONObject(idToken).getString("sub");
+		
+		// payload 디코드하기
+		String payload = new String(Base64.getDecoder().decode(idToken.split("\\.")[1]));
+		
+		// sub 구하기
+		String subject = jwtParser.parsePayload(payload).getSubject();
+		
 		userRepository.findBySubject(subject)
-			.orElseThrow(() -> new NoUserException("user does not exist with subject: " + subject));
+			.orElseThrow(() -> new NoUserException("no user with subject: " + subject));
 	}
 	
 	// 카카오 토큰 요청
@@ -129,9 +138,9 @@ public class KakaoUserService {
         
         // 추출한 값만 반환
         JSONObject tokenResponse = new JSONObject();
-        tokenResponse.append("access_token", accessToken);
-        tokenResponse.append("id_token", idToken);
-        tokenResponse.append("expires_in", expiresIn);
+        tokenResponse.put("access_token", accessToken);
+        tokenResponse.put("id_token", idToken);
+        tokenResponse.put("expires_in", expiresIn);
         
         return tokenResponse;
         

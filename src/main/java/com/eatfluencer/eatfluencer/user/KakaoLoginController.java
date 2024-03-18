@@ -15,17 +15,20 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.eatfluencer.eatfluencer.user.dto.KakaoSignUpRequestDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @RequestMapping(path = "/api/kakao")
 @RestController
+@Slf4j
 public class KakaoLoginController {
 
     @Value("${kakao.restapi.key}")
     private String kakaoRestApiKey;
 
     @Value("${kakao.redirect.uri}")
-    private String kakaoRedirectUri;                                                                                                                 
+    private String kakaoRedirectUri;
     
     private final KakaoUserService kakaoUserService;
 
@@ -49,18 +52,18 @@ public class KakaoLoginController {
     
     // 카카오 토큰 받기
     @GetMapping("/token")
-    public ResponseEntity<JSONObject> getKakaoToken(@RequestParam(name = "code") String code) {
+    public ResponseEntity<String> getKakaoToken(@RequestParam(name = "code") String code) {
     	
     	JSONObject tokenResponse = null;
     	
     	// 토큰 받기
         try {
 			tokenResponse = kakaoUserService.requestToken(code);
+			log.info("====================" + tokenResponse.toString());
 			kakaoUserService.checkUserSignedUp(tokenResponse.getString("id_token"));
         } catch (NoUserException e) { // 회원가입 필요
-        	e.printStackTrace();
         	return ResponseEntity.ok()
-        						 .body(tokenResponse.append("signed_up", false));
+        						 .body(tokenResponse.put("signed_up", false).toString());
         } catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -68,7 +71,7 @@ public class KakaoLoginController {
 		}
         
         return ResponseEntity.ok()
-        					 .body(tokenResponse);
+        					 .body(tokenResponse.toString());
         
     }
     
