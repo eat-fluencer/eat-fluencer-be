@@ -29,12 +29,14 @@ public class User extends Time {
     
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    private String nickname;
     
     private String emailAddress;
     
-    private String nickname;
+    private String subject;
     
-    private String kakaoSubject;
+    private String picture;
     
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();
@@ -49,9 +51,11 @@ public class User extends Time {
     private List<UserTag> userTags = new ArrayList<>();
     
     @Builder
-    public User(String emailAddress, String nickname) {
-    	this.emailAddress = emailAddress;
+    public User(String nickname, String emailAddress, String subject, String picture) {
     	this.nickname = nickname;
+    	this.emailAddress = emailAddress;
+    	this.subject = subject;
+    	this.picture = picture;
     }
     
     public void setNickname(String nickname) {

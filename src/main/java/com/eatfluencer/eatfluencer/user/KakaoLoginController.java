@@ -1,23 +1,18 @@
 package com.eatfluencer.eatfluencer.user;
 
-import java.util.Map;
-import java.util.Random;
-
-import javax.swing.text.html.HTML;
-
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.eatfluencer.eatfluencer.user.dto.KakaoSignUpRequestDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,9 +25,9 @@ public class KakaoLoginController {
     private String kakaoRestApiKey;
 
     @Value("${kakao.redirect.uri}")
-    private String kakaoRedirectUri;
-
-    private final RestTemplate restTemplate;
+    private String kakaoRedirectUri;                                                                                                                 
+    
+    private final KakaoUserService kakaoUserService;
 
     // 카카오 로그인 요청 URL 반환 API
     @GetMapping("/login-request-url")
@@ -52,34 +47,51 @@ public class KakaoLoginController {
         
     }
     
-    // 카카오 토큰 요청 & 발급
+    // 카카오 토큰 받기
     @GetMapping("/token")
-    public ResponseEntity<String> getKakaoToken(@RequestParam(name = "code") String code) {
+    public ResponseEntity<JSONObject> getKakaoToken(@RequestParam(name = "code") String code) {
     	
-        String tokenRequestUrl = "https://kauth.kakao.com/oauth/token";
+    	JSONObject tokenResponse = null;
+    	
+    	// 토큰 받기
+        try {
+			tokenResponse = kakaoUserService.requestToken(code);
+			kakaoUserService.checkUserSignedUp(tokenResponse.getString("id_token"));
+        } catch (NoUserException e) { // 회원가입 필요
+        	e.printStackTrace();
+        	return ResponseEntity.ok()
+        						 .body(tokenResponse.append("signed_up", false));
+        } catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+								 .build();
+		}
         
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-        
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code"); // authorization_code로 고정
-        params.add("client_id", kakaoRestApiKey);
-        params.add("redirect_uri", kakaoRedirectUri);
-        params.add("code", code);
-        
-        ResponseEntity<String> tokenResponse = restTemplate.postForEntity(
-        		tokenRequestUrl
-        		, new HttpEntity<>(params, headers)
-        		, String.class);
-        
-        JSONObject tokenResponseBody = new JSONObject(tokenResponse.getBody());
-        
-        // 가입 및 로그인 처리
-        
-        
-        return null;
-        
+        return ResponseEntity.ok()
+        					 .body(tokenResponse);
         
     }
+    
+    // 카카오 회원가입 처리
+    @PostMapping("/users")
+    public ResponseEntity<User> kakaoSignUpUser(@RequestBody KakaoSignUpRequestDto request) {
+    	
+    	User signUpUser = null;
+    	
+    	// 회원가입 처리
+        try {
+        	signUpUser = kakaoUserService.kakaoAddUser(request);
+        } catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+								 .build();
+		}
+    	
+    	return ResponseEntity.ok()
+    						 .body(signUpUser);
+    	
+    }
+    
+    
 }
 
