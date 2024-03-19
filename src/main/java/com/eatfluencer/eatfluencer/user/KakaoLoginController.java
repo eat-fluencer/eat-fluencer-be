@@ -1,12 +1,13 @@
 package com.eatfluencer.eatfluencer.user;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +16,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.eatfluencer.eatfluencer.user.dto.KakaoSignUpRequestDto;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
@@ -52,48 +52,57 @@ public class KakaoLoginController {
     
     // 카카오 토큰 받기
     @GetMapping("/token")
-    public ResponseEntity<String> getKakaoToken(@RequestParam(name = "code") String code) {
+    public ResponseEntity<TokenResponseDto> getKakaoToken(@RequestParam(name = "code") String code) throws Exception {
     	
-    	JSONObject tokenResponse = null;
+    	TokenResponseDto tokenResponse = null;
     	
     	// 토큰 받기
-        try {
-			tokenResponse = kakaoUserService.requestToken(code);
-			log.info("====================" + tokenResponse.toString());
-			kakaoUserService.checkUserSignedUp(tokenResponse.getString("id_token"));
-        } catch (NoUserException e) { // 회원가입 필요
-        	return ResponseEntity.ok()
-        						 .body(tokenResponse.put("signed_up", false).toString());
-        } catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-								 .build();
-		}
+		tokenResponse = kakaoUserService.requestToken(code);
+        
+        // idToken 유효성 검증
+		kakaoUserService.validateIdToken(tokenResponse.getIdToken());
         
         return ResponseEntity.ok()
-        					 .body(tokenResponse.toString());
+        					 .body(tokenResponse);
         
     }
     
+    // 회원가입 여부 확인
+    @GetMapping("/users/status")
+    public ResponseEntity<User> getKakaoUserStatus(@RequestHeader(value = "Authorization") String requestHeader) throws Exception {
+    	
+    	// idToken 추출 후 유효성 검증
+    	String idToken = kakaoUserService.extractTokenFromHttpHeader(requestHeader);
+		kakaoUserService.validateIdToken(idToken);
+		
+		// 회원가입 여부 확인
+		User user = kakaoUserService.checkUserSignedUp(idToken);
+        
+        return ResponseEntity.ok()
+        					 .body(user);
+        
+    }	
+    
     // 카카오 회원가입 처리
     @PostMapping("/users")
-    public ResponseEntity<User> kakaoSignUpUser(@RequestBody KakaoSignUpRequestDto request) {
+    public ResponseEntity<User> kakaoSignUpUser(@RequestHeader(value = "Authorization") String requestHeader
+    										  , @RequestBody KakaoSignUpRequestDto request) throws Exception {
+    	
+    	// idToken 추출 후 유효성 검증
+    	String idToken = kakaoUserService.extractTokenFromHttpHeader(requestHeader);
+		kakaoUserService.validateIdToken(idToken);
     	
     	User signUpUser = null;
     	
     	// 회원가입 처리
-        try {
-        	signUpUser = kakaoUserService.kakaoAddUser(request);
-        } catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-								 .build();
-		}
+        signUpUser = kakaoUserService.kakaoAddUser(request);
     	
     	return ResponseEntity.ok()
     						 .body(signUpUser);
     	
     }
+    
+    
     
     
 }

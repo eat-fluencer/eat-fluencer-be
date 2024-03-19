@@ -22,6 +22,7 @@ public class KakaoSignUpRequestDto {
 	public User toEntity() {
 		return User.builder()
 				   .nickname(this.getNickname())
+				   .email(this.getEmail())
 				   .subject(this.getSubject())
 				   .picture(this.getPicture())
 				   .build();

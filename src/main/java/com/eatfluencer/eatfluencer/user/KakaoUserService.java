@@ -6,7 +6,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,7 +23,9 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.impl.JWTParser;
-import com.eatfluencer.eatfluencer.common.PublicKeyNotFoundException;
+import com.eatfluencer.eatfluencer.exception.ErrorCode;
+import com.eatfluencer.eatfluencer.exception.PublicKeyNotFoundException;
+import com.eatfluencer.eatfluencer.exception.UserNotFoundException;
 import com.eatfluencer.eatfluencer.tag.Tag;
 import com.eatfluencer.eatfluencer.user.dto.KakaoSignUpRequestDto;
 
@@ -77,12 +78,12 @@ public class KakaoUserService {
         }
         
         // 특정 kid를 가진 key가 없으면 예외처리 
-		throw new PublicKeyNotFoundException("Public key not found for the kid: " + kid);
+		throw new PublicKeyNotFoundException("Public key not found for the kid: " + kid, ErrorCode.PUBLIC_KEY_NOT_FOUND);
         
 	}
 	
 	// id_token 검증
-	private void validateIdToken(String idToken) throws Exception {
+	public void validateIdToken(String idToken) throws Exception {
 		
 	    Algorithm algorithm = Algorithm.RSA256(getPublicKeyByKid(idToken));
 	    JWTVerifier verifier = JWT.require(algorithm)
@@ -94,7 +95,7 @@ public class KakaoUserService {
 	}
 	
 	// 가입 여부 확인
-	public void checkUserSignedUp(String idToken) throws NoUserException {
+	public User checkUserSignedUp(String idToken) throws UserNotFoundException {
 		
 		// payload 디코드하기
 		String payload = new String(Base64.getDecoder().decode(idToken.split("\\.")[1]));
@@ -102,12 +103,13 @@ public class KakaoUserService {
 		// sub 구하기
 		String subject = jwtParser.parsePayload(payload).getSubject();
 		
-		userRepository.findBySubject(subject)
-			.orElseThrow(() -> new NoUserException("no user with subject: " + subject));
+		return userRepository.findBySubject(subject)
+				.orElseThrow(() -> new UserNotFoundException("no user with subject: " + subject, ErrorCode.USER_NOT_FOUND));
+		
 	}
 	
 	// 카카오 토큰 요청
-    public JSONObject requestToken(String code) throws Exception {
+    public TokenResponseDto requestToken(String code) throws Exception {
     	
     	String tokenRequestUrl = "https://kauth.kakao.com/oauth/token";
         
@@ -132,26 +134,36 @@ public class KakaoUserService {
         String accessToken = responesBody.getString("access_token");
         String idToken = responesBody.getString("id_token");
         int expiresIn = responesBody.getInt("expires_in");
-        
-        // id_token 유효성 검증
-        validateIdToken(idToken);
-        
+      
         // 추출한 값만 반환
-        JSONObject tokenResponse = new JSONObject();
-        tokenResponse.put("access_token", accessToken);
-        tokenResponse.put("id_token", idToken);
-        tokenResponse.put("expires_in", expiresIn);
+        TokenResponseDto tokenResponse = TokenResponseDto.builder()
+        												 .idToken(idToken)
+        												 .accessToken(accessToken)
+        												 .expiresIn(expiresIn)
+        												 .build();
         
         return tokenResponse;
         
     }
+    
+    // HTTP Header에서 token 추출
+    public String extractTokenFromHttpHeader(String requestHeader) {
+    	String token = null;
+    	if(requestHeader != null && requestHeader.startsWith("Bearer ")) {
+    		token =  requestHeader.substring(7);
+    	} else {
+    		// throw NoIdTokenException
+    	}
+    	return token;
+    }
 	
 	// 가입 처리
+    @Transactional
 	public User kakaoAddUser(KakaoSignUpRequestDto request) {
 		User addUser = userRepository.save(request.toEntity());
-		List<Tag> tags = request.getTags();
-		tags.stream()
-			.forEach(tag -> userTagRepository.save(new UserTag(addUser, tag)));
+		//List<Tag> tags = request.getTags();
+		//tags.stream()
+		//	.forEach(tag -> userTagRepository.save(new UserTag(addUser, tag)));
 		return addUser;
 	}
 
