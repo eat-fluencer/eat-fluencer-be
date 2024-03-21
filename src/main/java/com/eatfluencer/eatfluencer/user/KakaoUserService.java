@@ -158,6 +158,7 @@ public class KakaoUserService {
     }
 	
 	// 가입 처리
+	@Transactional
 	public User kakaoAddUser(KakaoSignUpRequestDto request) {
 		User addUser = userRepository.save(request.toEntity());
 		//List<Tag> tags = request.getTags();
@@ -181,9 +182,36 @@ public class KakaoUserService {
         		, String.class);
         
         Long kakaoIdAsLong = new JSONObject(response.getBody()).getLong("id");
+        String kakaoId = Long.toString(kakaoIdAsLong);
         
-        return Long.toString(kakaoIdAsLong);
+        return kakaoId;
 		
 	}
+	
+	// 회원탈퇴 처리
+	@Transactional
+	public User kakaoCancelUser(String accessToken) throws UserNotFoundException {
+		
+		String logoutUrl = "https://kapi.kakao.com/v1/user/unlink";
+		
+		HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        
+     	// 연결끊기 요청
+        ResponseEntity<String> response = restTemplate.postForEntity(
+        		logoutUrl
+        		, new HttpEntity<>(headers)
+        		, String.class);
+        
+        Long kakaoIdAsLong = new JSONObject(response.getBody()).getLong("id");
+        String kakaoId = Long.toString(kakaoIdAsLong);
+        
+        // 회원 삭제
+        User deleteUser = userRepository.deleteByKakaoId(kakaoId)
+        								.orElseThrow(() -> new UserNotFoundException("user not found with kakao ID: " + kakaoId
+        																			, ErrorCode.USER_NOT_FOUND));      
+        return deleteUser;
+		
+	} 
 
 }

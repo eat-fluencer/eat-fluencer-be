@@ -2,6 +2,7 @@ package com.eatfluencer.eatfluencer.user;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -90,7 +91,7 @@ public class KakaoLoginController {
     	String idToken = kakaoUserService.extractTokenFromHttpHeader(requestHeader);
 		kakaoUserService.validateIdToken(idToken);
     	
-		// 회원가입 처리
+		// 회원가입
     	User signUpUser = kakaoUserService.kakaoAddUser(request);
     	
     	return ResponseEntity.ok()
@@ -104,11 +105,25 @@ public class KakaoLoginController {
     	// accessToken 추출
     	String accessToken = kakaoUserService.extractTokenFromHttpHeader(requestHeader);
 		
-    	// 카카오 로그아웃
+    	// 로그아웃
     	String kakaoId = kakaoUserService.kakaoLogoutUser(accessToken);
     	
 		return ResponseEntity.ok()
 							 .body(kakaoId);
+		
+    }
+    
+    @DeleteMapping("/users")
+    public ResponseEntity<User> kakaoCancelUser(@RequestHeader(value = "Authorization") String requestHeader) throws Exception {
+    	
+    	// accessToken 추출
+    	String accessToken = kakaoUserService.extractTokenFromHttpHeader(requestHeader);
+		
+    	// 회원탈퇴
+    	User deleteUser = kakaoUserService.kakaoCancelUser(accessToken);
+    	
+		return ResponseEntity.ok()
+							 .body(deleteUser);
 		
     }
     
