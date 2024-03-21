@@ -1,10 +1,8 @@
 package com.eatfluencer.eatfluencer.user;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -76,14 +74,14 @@ public class KakaoLoginController {
 		kakaoUserService.validateIdToken(idToken);
 		
 		// 회원가입 여부 확인
-		User user = kakaoUserService.checkUserSignedUp(idToken);
+		User checkUser = kakaoUserService.checkUserSignedUp(idToken);
         
         return ResponseEntity.ok()
-        					 .body(user);
+        					 .body(checkUser);
         
     }	
     
-    // 카카오 회원가입 처리
+    // 회원가입 처리
     @PostMapping("/users")
     public ResponseEntity<User> kakaoSignUpUser(@RequestHeader(value = "Authorization") String requestHeader
     										  , @RequestBody KakaoSignUpRequestDto request) throws Exception {
@@ -92,18 +90,27 @@ public class KakaoLoginController {
     	String idToken = kakaoUserService.extractTokenFromHttpHeader(requestHeader);
 		kakaoUserService.validateIdToken(idToken);
     	
-    	User signUpUser = null;
-    	
-    	// 회원가입 처리
-        signUpUser = kakaoUserService.kakaoAddUser(request);
+		// 회원가입 처리
+    	User signUpUser = kakaoUserService.kakaoAddUser(request);
     	
     	return ResponseEntity.ok()
     						 .body(signUpUser);
     	
     }
     
-    
-    
+    @PostMapping("/logout")
+    public ResponseEntity<String> kakaoLogoutUser(@RequestHeader(value = "Authorization") String requestHeader) throws Exception {
+    	
+    	// accessToken 추출
+    	String accessToken = kakaoUserService.extractTokenFromHttpHeader(requestHeader);
+		
+    	// 카카오 로그아웃
+    	String kakaoId = kakaoUserService.kakaoLogoutUser(accessToken);
+    	
+		return ResponseEntity.ok()
+							 .body(kakaoId);
+		
+    }
     
 }
 

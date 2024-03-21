@@ -39,7 +39,7 @@ public class User extends Time {
     private String email;
     
     @Column(unique = true)
-    private String subject;
+    private String kakaoId;
     
     private String picture;
     
@@ -56,10 +56,10 @@ public class User extends Time {
     private List<UserTag> userTags = new ArrayList<>();
     
     @Builder
-    public User(String nickname, String email, String subject, String picture) {
+    public User(String nickname, String email, String kakaoId, String picture) {
     	this.nickname = nickname;
     	this.email = email;
-    	this.subject = subject;
+    	this.kakaoId = kakaoId;
     	this.picture = picture;
     }
     

@@ -100,11 +100,11 @@ public class KakaoUserService {
 		// payload 디코드하기
 		String payload = new String(Base64.getDecoder().decode(idToken.split("\\.")[1]));
 		
-		// sub 구하기
-		String subject = jwtParser.parsePayload(payload).getSubject();
+		// sub(kakao 회원번호) 구하기
+		String kakaoId = jwtParser.parsePayload(payload).getSubject();
 		
-		return userRepository.findBySubject(subject)
-				.orElseThrow(() -> new UserNotFoundException("no user with subject: " + subject, ErrorCode.USER_NOT_FOUND));
+		return userRepository.findByKakaoId(kakaoId)
+				.orElseThrow(() -> new UserNotFoundException("no user with kakao ID: " + kakaoId, ErrorCode.USER_NOT_FOUND));
 		
 	}
 	
@@ -158,13 +158,32 @@ public class KakaoUserService {
     }
 	
 	// 가입 처리
-    @Transactional
 	public User kakaoAddUser(KakaoSignUpRequestDto request) {
 		User addUser = userRepository.save(request.toEntity());
 		//List<Tag> tags = request.getTags();
 		//tags.stream()
 		//	.forEach(tag -> userTagRepository.save(new UserTag(addUser, tag)));
 		return addUser;
+	}
+	
+	// 로그아웃 처리
+	public String kakaoLogoutUser(String accessToken) {
+		
+		String logoutUrl = "https://kauth.kakao.com/oauth/logout";
+		
+		HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        
+     	// 로그아웃 요청
+        ResponseEntity<String> response = restTemplate.postForEntity(
+        		logoutUrl
+        		, new HttpEntity<>(headers)
+        		, String.class);
+        
+        Long kakaoIdAsLong = new JSONObject(response.getBody()).getLong("id");
+        
+        return Long.toString(kakaoIdAsLong);
+		
 	}
 
 }

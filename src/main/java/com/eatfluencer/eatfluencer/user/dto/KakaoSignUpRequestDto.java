@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class KakaoSignUpRequestDto {
 	private String nickname;
 	private String email;
-	private String subject;
+	private String kakaoId;
 	private String picture;
 	private List<Tag> tags;
 	
@@ -23,7 +23,7 @@ public class KakaoSignUpRequestDto {
 		return User.builder()
 				   .nickname(this.getNickname())
 				   .email(this.getEmail())
-				   .subject(this.getSubject())
+				   .kakaoId(this.getKakaoId())
 				   .picture(this.getPicture())
 				   .build();
 	}
