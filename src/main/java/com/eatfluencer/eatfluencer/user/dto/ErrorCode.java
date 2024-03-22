@@ -1,4 +1,4 @@
-package com.eatfluencer.eatfluencer.exception;
+package com.eatfluencer.eatfluencer.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

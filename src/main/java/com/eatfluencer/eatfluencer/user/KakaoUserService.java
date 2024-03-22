@@ -5,7 +5,6 @@ import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,10 +22,9 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.impl.JWTParser;
-import com.eatfluencer.eatfluencer.exception.ErrorCode;
 import com.eatfluencer.eatfluencer.exception.PublicKeyNotFoundException;
 import com.eatfluencer.eatfluencer.exception.UserNotFoundException;
-import com.eatfluencer.eatfluencer.tag.Tag;
+import com.eatfluencer.eatfluencer.user.dto.ErrorCode;
 import com.eatfluencer.eatfluencer.user.dto.KakaoSignUpRequestDto;
 
 import lombok.RequiredArgsConstructor;
