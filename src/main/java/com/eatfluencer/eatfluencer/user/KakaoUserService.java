@@ -23,6 +23,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.impl.JWTParser;
 import com.eatfluencer.eatfluencer.exception.PublicKeyNotFoundException;
+import com.eatfluencer.eatfluencer.exception.TokenNotFoundException;
 import com.eatfluencer.eatfluencer.exception.UserNotFoundException;
 import com.eatfluencer.eatfluencer.user.dto.ErrorCode;
 import com.eatfluencer.eatfluencer.user.dto.KakaoSignUpRequestDto;
@@ -52,7 +53,8 @@ public class KakaoUserService {
 		
 		// idToken header 디코드해서 String으로 변환
 		String header = new String(Base64.getDecoder().decode(idToken.split("\\.")[0]));
-		
+		log.info(idToken.split("\\.")[0]);
+		log.info(header);
 		// Header에서 kid 구하기
 		String kid = jwtParser.parseHeader(header).getKeyId();
 		
@@ -150,7 +152,7 @@ public class KakaoUserService {
     	if(requestHeader != null && requestHeader.startsWith("Bearer ")) {
     		token =  requestHeader.substring(7);
     	} else {
-    		// throw NoIdTokenException
+    		throw new TokenNotFoundException("id token not found", ErrorCode.TOKEN_NOT_FOUND);
     	}
     	return token;
     }
