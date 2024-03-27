@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.eatfluencer.eatfluencer.review.Review;
+import com.eatfluencer.eatfluencer.tag.RestaurantTag;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

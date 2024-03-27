@@ -1,6 +1,6 @@
-package com.eatfluencer.eatfluencer.restaurant;
+package com.eatfluencer.eatfluencer.tag;
 
-import com.eatfluencer.eatfluencer.tag.Tag;
+import com.eatfluencer.eatfluencer.restaurant.Restaurant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

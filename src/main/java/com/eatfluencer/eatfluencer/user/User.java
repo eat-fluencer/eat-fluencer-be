@@ -4,11 +4,10 @@ package com.eatfluencer.eatfluencer.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-
 import com.eatfluencer.eatfluencer.comment.Comment;
 import com.eatfluencer.eatfluencer.common.Time;
 import com.eatfluencer.eatfluencer.review.Review;
+import com.eatfluencer.eatfluencer.tag.UserTag;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -33,13 +32,15 @@ public class User extends Time {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String nickname;
+    @Column(unique = true)
+    private String providerId;
     
-    @Column(unique = true, nullable = false)
+    private String provider;
+    
+    @Column(unique = true, nullable = true)
     private String email;
     
-    @Column(unique = true)
-    private String kakaoId;
+    private String nickname;
     
     private String picture;
     
@@ -56,10 +57,11 @@ public class User extends Time {
     private List<UserTag> userTags = new ArrayList<>();
     
     @Builder
-    public User(String nickname, String email, String kakaoId, String picture) {
-    	this.nickname = nickname;
+    public User(String providerId, String provider, String email, String nickname, String picture) {
+    	this.providerId = providerId;
+    	this.provider = provider;
     	this.email = email;
-    	this.kakaoId = kakaoId;
+    	this.nickname = nickname;
     	this.picture = picture;
     }
     

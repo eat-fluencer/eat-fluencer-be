@@ -3,9 +3,6 @@ package com.eatfluencer.eatfluencer.tag;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.eatfluencer.eatfluencer.restaurant.RestaurantTag;
-import com.eatfluencer.eatfluencer.user.UserTag;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

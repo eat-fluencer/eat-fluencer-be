@@ -1,4 +1,4 @@
-package com.eatfluencer.eatfluencer.user;
+package com.eatfluencer.eatfluencer.tag;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
