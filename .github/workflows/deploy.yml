@@ -24,14 +24,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 17
-
-      - name: Debug - Print resource path
-        run: echo "Resource Path: ${{ env.RESOURCE_PATH }}"
-        shell: bash
-
-      - name: Debug - Print YAML before substitution
-        run: cat ${{ env.RESOURCE_PATH }}
-        shell: bash
         
         # [1]
       - name: Set yaml file 
