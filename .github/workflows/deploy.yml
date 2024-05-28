@@ -10,6 +10,7 @@ env:
   RESOURCE_PATH: ./src/main/resources/application.yml
   CODE_DEPLOY_APPLICATION_NAME: eat-fluencer-api-code-deploy
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: eat-fluencer-api-server
+  APPLICATION_NAME: eatfluencer-api
 
 jobs:
   build:
