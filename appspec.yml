@@ -3,9 +3,9 @@ os: linux
 
 files:
   - source: /
-    destination: /opt/testapp
+    destination: /opt/eat-fluencer-be
 permissions:
-  - object: /opt/testapp/
+  - object: /opt/eat-fluencer-be
     owner: ubuntu
     group: ubuntu
     mode: 755
