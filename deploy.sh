@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-REPOSITORY=/opt/testapp
+REPOSITORY=/opt/eat-fluencer-be
 cd $REPOSITORY
 
 APP_NAME=action_codedeploy
