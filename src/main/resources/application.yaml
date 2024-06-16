@@ -19,12 +19,14 @@ spring:
     defer-datasource-initialization: true      
   jackson:
     property-naming-strategy: SNAKE_CASE
-      
-kakao:
-  serviceapp:
-    key: ${KAKAO_SERVICEAPP_KEY}
     
 jwt:
   secretKey:
     access: ${ACCESS_TOKEN_SECRETKEY}
     refresh: ${REFRESH_TOKEN_SECRETKEY}
+
+kakao:
+  restapi:
+    key: ${KAKAO_REATAPI_KEY}
+  redirect:
+    uri: ${KAKAO_REDIRECT_URI}

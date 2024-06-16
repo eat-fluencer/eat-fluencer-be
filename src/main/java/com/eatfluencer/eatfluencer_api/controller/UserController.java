@@ -3,10 +3,16 @@ package com.eatfluencer.eatfluencer_api.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.eatfluencer.eatfluencer_api.auth.oauth2idtoken.OAuth2IdClass;
 import com.eatfluencer.eatfluencer_api.common.SuccessResponse;
@@ -33,6 +41,73 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
     private final UserService userService;
+	private final RestTemplate restTemplate;
+
+	@Value("${kakao.restapi.key}")
+    private String KAKAO_RESTAPI_KEY;
+
+    @Value("${kakao.redirect.uri}")
+    private String KAKAO_REDIRECT_URI;
+	
+
+	@GetMapping("/login-request-url")
+    public ResponseEntity<SuccessResponse> getLoginLink(@RequestParam(name = "nonce", required = false) String nonce) {
+
+		String baseUrl = "https://kauth.kakao.com/oauth/authorize";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .queryParam("client_id", KAKAO_RESTAPI_KEY)
+                .queryParam("redirect_uri", KAKAO_REDIRECT_URI)
+                .queryParam("response_type", "code") // "response_type"은 "code"로 고정
+                .queryParam("nonce", nonce);
+
+   		String loginRequestUrl = builder.toString();
+   	
+    	SuccessResponse response = SuccessResponse.builder()
+       												  .httpStatus(HttpStatus.OK)
+       												  .data(Map.of("login_request_url", loginRequestUrl))
+       												  .build();
+
+       return ResponseEntity.ok()
+       					 .body(response);
+       
+   }
+
+   // OAuth2.0 토큰 받기
+   @GetMapping("/token")
+   public ResponseEntity<SuccessResponse> getIdToken(@RequestParam(name = "code", required = true) String code) throws Exception {
+   	
+		// ACCESS, ID, REFRESH 토큰 받기
+		String tokenRequestUrl = "https://kauth.kakao.com/oauth/token";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code"); // authorization_code로 고정
+        params.add("client_id", KAKAO_RESTAPI_KEY);
+        params.add("redirect_uri", KAKAO_REDIRECT_URI);
+        params.add("code", code);
+        
+        // 토큰 받기
+        ResponseEntity<String> tokenResponse = restTemplate.postForEntity(
+        		tokenRequestUrl
+        		, new HttpEntity<>(params, headers)
+        		, String.class);
+        
+        JSONObject responesBody = new JSONObject(tokenResponse.getBody());
+        
+        // 응답 본문에서 id_token만 추출
+        String idToken = responesBody.getString("id_token");
+		
+		SuccessResponse response = SuccessResponse.builder()
+			.httpStatus(HttpStatus.OK)
+			.data(Map.of("kakao_id_token", idToken))
+			.build();
+					
+		return ResponseEntity.ok()
+							.body(response);
+       
+   }
     
     // 서비스 회원가입 여부 확인
     @PostMapping("/registration-status")
