@@ -42,9 +42,6 @@ public class JwtProvider {
     @Value("${jwt.secretkey.refresh}")
     private String refreshTokenSecretKey;
     
-    @Value("${kakao.serviceapp.key}")
-    private String kakaoServiceappKey;
-    
     private final long ACCESS_TOKEN_TTL = 999999999999L;// 1 * 60 * 60 * 1000; // 1시간
     private final long REFRESH_TOKEN_TTL = 999999999999L; // 14일
     
