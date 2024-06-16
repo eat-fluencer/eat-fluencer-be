@@ -41,6 +41,9 @@ public class JwtProvider {
     
     @Value("${jwt.secretkey.refresh}")
     private String refreshTokenSecretKey;
+
+	@Value("${kakao.restapi.key}")
+	private String kakaoRestapiKey;
     
     private final long ACCESS_TOKEN_TTL = 999999999999L;// 1 * 60 * 60 * 1000; // 1시간
     private final long REFRESH_TOKEN_TTL = 999999999999L; // 14일
@@ -208,7 +211,7 @@ public class JwtProvider {
 		Jwts.parserBuilder()
 			.setSigningKey(publicKey)
 			.requireIssuer("https://kauth.kakao.com") // iss가 카카오인지
-			.requireAudience(kakaoServiceappKey) // aud가 서비스 앱 키와 일치하는지
+			.requireAudience(kakaoRestapiKey) // aud가 서비스 앱 키와 일치하는지
 			.build()
 			.parseClaimsJws(idToken); // exp는 default로 확인
 		
