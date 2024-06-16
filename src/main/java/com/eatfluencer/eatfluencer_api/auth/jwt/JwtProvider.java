@@ -45,7 +45,7 @@ public class JwtProvider {
 	@Value("${kakao.restapi.key}")
 	private String kakaoRestapiKey;
     
-    private final long ACCESS_TOKEN_TTL = 999999999999L;// 1 * 60 * 60 * 1000; // 1시간
+    private final long ACCESS_TOKEN_TTL = 1 * 60 * 60 * 1000L;// 1 * 60 * 60 * 1000; // 1시간
     private final long REFRESH_TOKEN_TTL = 999999999999L; // 14일
     
     private final RestTemplate restTemplate;
