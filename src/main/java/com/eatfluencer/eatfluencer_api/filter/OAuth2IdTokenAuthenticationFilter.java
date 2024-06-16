@@ -2,6 +2,7 @@ package com.eatfluencer.eatfluencer_api.filter;
 
 import java.io.IOException;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class OAuth2IdTokenAuthenticationFilter extends OncePerRequestFilter {
-	
+	@Lazy
 	private final AuthenticationManager manager;
 	
 	@Override

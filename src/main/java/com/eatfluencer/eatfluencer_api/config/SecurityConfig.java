@@ -2,6 +2,7 @@ package com.eatfluencer.eatfluencer_api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
@@ -18,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 	
+	@Lazy
 	private final OAuth2IdTokenAuthenticationFilter oAuth2IdTokenAuthenticationFilter;
+	@Lazy
 	private final AccessTokenAuthenticationFilter accessTokenAuthenticationFilter;
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
